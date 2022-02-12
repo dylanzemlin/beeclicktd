@@ -42,9 +42,24 @@ class BeeTDGame {
         }
     }
 
-    setStage(stage) {
-        this.stage = stage;
+    getStageObject() {
+        switch (this.stage) {
+            case GameStage.CLICKER: {
+                return this.stages["clicker"];
+            }
+            case GameStage.DEFENSE: {
+                return this.stages["defense"];
+            }
+            case GameStage.MENU: {
+                return this.stages["menu"];
+            }
+        }
+    }
 
+    setStage(stage) {
+        this.getStageObject().onSceneUnload();
+
+        this.stage = stage;
         switch (this.stage) {
             case GameStage.CLICKER: {
                 $("#stage-menu").addClass("hidden");
@@ -62,6 +77,8 @@ class BeeTDGame {
                 $("#stage-menu").removeClass("hidden");
             } break;
         }
+
+        this.getStageObject().onSceneLoad();
     }
 
     hookEvents() {
