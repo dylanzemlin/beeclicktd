@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bee Click Tower Defense</title>
+
+    <link rel="stylesheet" href="styles/index.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="stage hidden" id="stage-clicker">
+            <!-- The bee click stage of the game -->
+            <div class="timer">
+                Time Remaining - 00:00:00
+            </div>
+            <div class="click-content">
+                <div class="left flex-bee">
+                    <h3 id="honey-text">0 drops of honey</h3>
+                    <img src="https://beeclick.org/img/bee.gif" alt="BEE" id="bee">
+                </div>
+                <div class="middle">
+                    <div class="facts">
+
+                    </div>
+                    <div class="icons">
+
+                    </div>
+                </div>
+                <div class="upgrades">
+                    <h2> Upgrades </h2>
+                    <div class="fake-upgrade upgrade hidden unavailable">
+                        <div class="icon"></div>
+                        <p class="upgrade-text"></p>
+                        <p class="upgrade-cost"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="stage hidden" id="stage-defense">
+            <!-- The tower defense stage of the game -->
+            <div class="frames">
+                <div class="canvasContainer">
+                    <canvas id="towerCanvas"></canvas>
+                </div>
+                <div class="towerContainer">
+
+                </div>
+            </div>
+        </div>
+        <div class="stage hidden flex-column" id="stage-menu">
+            <!-- The main menu stage of the game -->
+            <div class="header flex-column">
+                <h1> Bee Click Tower Defense </h1>
+                <p>
+                    As if clicking a bee for no value was not enough, now you can fight spiders while clicking a be for
+                    no real value!
+                </p>
+                <button id="create-game">
+                    Create Game
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include JQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+        integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+
+    <!-- MomentJS code for time formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
+        integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Game Scripts -->
+    <script src="scripts/shared.js"></script>
+    <script src="scripts/stages/clicker.js"></script>
+    <script src="scripts/stages/defense.js"></script>
+    <script src="scripts/stages/menu.js"></script>
+    <script src="scripts/game.js"></script>
+
+</body>
+
+</html>

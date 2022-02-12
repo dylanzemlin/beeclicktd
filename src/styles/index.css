@@ -1,0 +1,156 @@
+* {
+    /* Default Styles */
+    padding: 0;
+    margin: 0;
+    border: none;
+    outline: none;
+}
+
+/* Fit HTML & Body to page */
+html, body {
+    width: 100%;
+    height: 100%;
+}
+ 
+h1, h2, h3, p {
+    color: white;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+}
+
+.container > *  {
+    width: 100%;
+    height: 100%;
+    background-color: #141414;
+}
+
+.flex-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.flex-bee {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Completely hides an element from the screen */
+.hidden {
+    display: none !important;
+}
+
+/* Main Menu Stylings */
+
+#create-game {
+    padding: 1em 2em;
+    border-radius: 10px;
+    transition: filter 0.25s ease;
+    background-color: #202020;
+    border: 1px solid #282828;
+    color: white;
+
+    margin-top: 2em;
+}
+
+#create-game:hover {
+    filter: brightness(120%)
+}
+
+/* Clicker Stylings */
+
+.icon {
+    background-position: 0px 0px;
+    width: 48px;
+    height: 48px;
+}
+
+.upgrade {
+    display: flex;
+    align-items: center;
+}
+
+.upgrade .upgrade-text {
+    font-size: 1.5em;
+    margin-left: 0.8em;
+}
+
+.upgrade .upgrade-cost {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-left: 1em;
+}
+
+.upgrade:not(.unavailable):hover {
+    cursor: pointer;
+}
+
+/* .upgrade .upgrade-text {
+    transition: color 0.1s ease;
+}
+
+.upgrade:not(.unavailable):hover .upgrade-text {
+    color: rgb(223, 228, 216);
+} */
+
+#stage-clicker .timer {
+    height: max-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8em;
+}
+
+#stage-clicker .click-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+#honey-text {
+    font-size: 2.5rem;
+    text-align: center;
+}
+
+#bee {
+    transition: transform 0.25s ease;
+    margin-top: 1.8em;
+}
+
+#bee:hover {
+    transform: scale(1.1);
+}
+
+#bee:active {
+    transform: scale(0.9);
+}
+
+.unavailable > * {
+    color: #756c6ccb;
+}
+
+#stage-clicker .timer {
+    color :white;
+    font-size: 1.35em;
+}
+
+/* Tower Defense Stage */
+
+#stage-defense .frames {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+#stage-defense .frames .towerContainer {
+    flex: 0 0 108px;
+    background-color: rgb(51, 38, 2);
+}
+
+#stage-defense .frames .canvasContainer {
+    flex-grow: 1;
+}
