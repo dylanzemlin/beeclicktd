@@ -396,6 +396,10 @@ class GameStageDefense {
             if (this.isOverPath()) {
                 return;
             }
+            
+            if(this.placingTower.cost > honey) {
+                return;
+            }
 
             this.placingTower.position = JSON.parse(JSON.stringify(this.placingTower.position));
             this.towers.push(this.placingTower.clone());
