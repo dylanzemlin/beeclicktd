@@ -17,7 +17,7 @@ var wave = 0;
 var isDebugging = false;
 
 // If it is in demo mode, the starting honey is increased and the time between waves is decreased
-var isDemo = true;
+var isDemo = false;
 
 var mousePos = {
     x: 0,
