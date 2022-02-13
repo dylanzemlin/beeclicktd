@@ -27,7 +27,6 @@ class GameStageClicker {
         for (const key of Object.keys(this.upgrades)) {
             const upgrade = this.upgrades[key];
             const clonedUpgrade = $(".fake-upgrade").clone();
-            console.log(clonedUpgrade);
             $(".icon", clonedUpgrade).css("background-image", `url(\"${upgrade.icon}\")`);
             $(".upgrade-text", clonedUpgrade).text(`${upgrade.name} (0)`);
             $(".upgrade-cost", clonedUpgrade).text(upgrade.cost);
