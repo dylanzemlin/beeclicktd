@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="styles/index.css">
 </head>
 
-<body>
+<body oncontextmenu="return false;">
 
     <div class="container">
         <div class="stage hidden" id="stage-clicker">
@@ -48,7 +48,19 @@
                     <canvas id="towerCanvas"></canvas>
                 </div>
                 <div class="towerContainer">
-
+                    <p id="honey-amount"></p>
+                    <p id="towers-title">Towers</p>
+                    <div class="towers">
+                        <div id="fake-tower" class="tower hidden">
+                            <div class="icon">
+                            </div>
+                            <div class="cost">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="start-wave">
+                        Start Wave
+                    </button>
                 </div>
             </div>
         </div>
