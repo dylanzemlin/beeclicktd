@@ -2,7 +2,16 @@
 var honey = 500;
 
 // How long does the user have left in their clicking time
-var click_time_remaining = 10;
+var click_time_remaining = 5;
+
+// The remaining lives
+var lives = 50;
+
+// Is the user holding ctrl
+var isHoldingCtrl = false;
+
+// The current wave
+var wave = 0;
 
 var mousePos = {
     x: 0,
@@ -18,6 +27,11 @@ function putHoney(bHoney) {
     honey += bHoney;
     $("#honey-text").text(`${Math.floor(honey)} drops of honey`);
     $("#honey-amount").text(`Honey: ${Math.floor(honey)}`);
+}
+
+function putLives(bLives) {
+    lives += bLives;
+    $("#lives-text").text(`Lives: ${lives}`);
 }
 
 // https://stackoverflow.com/questions/10214873/make-canvas-as-wide-and-as-high-as-parent

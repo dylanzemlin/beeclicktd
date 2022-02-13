@@ -56,10 +56,11 @@ class GameEnemy {
     }
 
     clone() {
-        return new GameEnemy(this.pathing, this.speed, this.health, this.color, this.size);
+        return new GameEnemy(JSON.parse(JSON.stringify(this.pathing)), this.speed, this.health, this.color, this.size);
     }
 
     onGameTick(game) {
+
     }
 
     attack(damage) {
@@ -140,7 +141,9 @@ class BeeTower {
         context.fillStyle = this.color;
         context.lineWidth = 5;
         circle(context, this.position, this.size);
-        hollowCircle(context, this.position, this.range);
+        if (isHoldingCtrl) {
+            hollowCircle(context, this.position, this.range);
+        }
         context.globalAlpha = priorOpacity;
     }
 }
@@ -151,7 +154,7 @@ var towerMap = {
 }
 
 var enemyMap = {
-    "basic": new GameEnemy({ x: 0, y: 0, index: 1 }, 0.7, 200, "red", 15)
+    "basic": new GameEnemy({ x: 0, y: 0, index: 1 }, 5, 200, "red", 15)
 }
 
 var waveMap = {
@@ -160,14 +163,14 @@ var waveMap = {
             quote: "This should be an easy start", // A quote displayed at the bottom of the screen
             enemies: [
                 // enemy type, delay until next enemy
-                "basic", 2000,
-                "basic", 2000,
-                "basic", 2000,
-                "basic", 2000,
-                "basic", 2000,
-                "basic", 2000,
-                "basic", 2000,
-                "basic", 2000
+                "basic", 1000,
+                "basic", 1000,
+                "basic", 1000,
+                "basic", 1000,
+                "basic", 1000,
+                "basic", 1000,
+                "basic", 1000,
+                "basic", 1000
             ]
         }
     ]
@@ -179,12 +182,13 @@ class GameStageDefense {
 
         this.canvas = document.getElementById("towerCanvas");
         this.context = this.canvas.getContext("2d");
-        this.wave = 0;
+        this.wavePlayed = false;
         this.isHoldingShift = false;
         this.enemies = [];
         this.towers = []
         this.timerId = undefined;
         this.lastFrame = 0;
+        this.next = 0;
         this.map = new GameMap({
             map_name: "Default Map",
             groundColors: ["#567d46", "#446438", "#22321C"],
@@ -231,7 +235,12 @@ class GameStageDefense {
             this.placingTower = undefined;
             event.preventDefault();
         }
+
         if (event.which === 1 && this.placingTower) {
+            if (mousePos.x > 1100 || mousePos.x < 0 || mousePos.y < 1) {
+                return;
+            }
+
             // Clone the towers positions so it doesn't get effected by the global object
             this.placingTower.position = JSON.parse(JSON.stringify(this.placingTower.position));
             this.towers.push(this.placingTower.clone());
@@ -254,11 +263,19 @@ class GameStageDefense {
         if (event.key == "Shift") {
             this.isHoldingShift = true;
         }
+
+        if (event.key == "Control") {
+            isHoldingCtrl = true;
+        }
     }
 
     onKeyUp(event) {
         if (event.key == "Shift") {
             this.isHoldingShift = false;
+        }
+
+        if (event.key == "Control") {
+            isHoldingCtrl = false;
         }
     }
 
@@ -285,16 +302,26 @@ class GameStageDefense {
 
         // Draw Enemies
         for (const enemy of this.enemies) {
+            if (enemy.health <= 0) {
+                continue;
+            }
+
             enemy.pathing.x = lerp(enemy.pathing.x, this.map.data.path[enemy.pathing.index].x, enemy.speed);
             enemy.pathing.y = lerp(enemy.pathing.y, this.map.data.path[enemy.pathing.index].y, enemy.speed);
 
             if (Math.abs(this.map.data.path[enemy.pathing.index].x - enemy.pathing.x) <= 3
                 && Math.abs(this.map.data.path[enemy.pathing.index].y - enemy.pathing.y) <= 3) {
-                enemy.pathing.index++;
+                if (enemy.pathing.index + 1 < this.map.data.path.length) {
+                    enemy.pathing.index++;
+                } else {
+                    enemy.health = 0;
+                    putLives(-1);
+                }
             }
 
             enemy.draw(this.context);
             enemy.onGameTick(this);
+
         }
 
         // Draw Placing Tower
@@ -302,42 +329,75 @@ class GameStageDefense {
             this.placingTower.position = mousePos;
             this.placingTower.draw(this.context, 0.5);
         }
+
+        // Debug Information
+        this.context.font = "18px Arial";
+        this.context.fillStyle = "white";
+        this.context.fillText(`(${mousePos.x}, ${mousePos.y})`, 15, 30);
+        this.context.fillText(`Shift: ${this.isHoldingShift}`, 15, 50);
+        this.context.fillText(`Ctrl: ${isHoldingCtrl}`, 15, 70);
+        this.context.fillText(`Wave: ${wave}`, 15, 90);
+        this.context.fillText(`Enemies: ${this.remainingEnemies()}`, 15, 110);
     }
 
     startWave(enemyIndex) {
-        const enemies = waveMap["beasy"][this.wave].enemies;
+        const enemies = waveMap["beasy"][wave].enemies;
         if (enemyIndex >= enemies.length) {
-            // Wave Ended
+            if (!$(".fun-text").hasClass("fun-text-hidden")) {
+                $(".fun-text").addClass("fun-text-hidden");
+            }
             return;
         }
 
         const enemy = enemyMap[enemies[enemyIndex]].clone();
-        enemy.pathing = { ...this.map.data.path[0], index: 1 };
+        enemy.pathing = JSON.parse(JSON.stringify({ ...this.map.data.path[0], index: 1 }));
         this.enemies.push(enemy);
+
+        this.wavePlayed = true;
+
+        if (enemyIndex >= enemies.length / 3 && $(".fun-text").hasClass("fun-text-hidden")) {
+            $(".fun-text").removeClass("fun-text-hidden");
+            $(".fun-text").text(waveMap["beasy"][wave].quote);
+        }
+
+        if (enemyIndex >= enemies.length / 3 + 4) {
+            if (!($(".fun-text").hasClass("fun-text-hidden"))) {
+                $(".fun-text").addClass("fun-text-hidden");
+            }
+        }
 
         setTimeout(() => {
             this.startWave(enemyIndex + 2);
-        }, enemies[enemyIndex + 1]);
+        }, enemies[enemyIndex + 1] ?? 1);
     }
 
     remainingEnemies() {
         return this.enemies.filter(x => x.health > 0).length;
     }
 
+    animationCallback() {
+        requestAnimationFrame(() => this.animationCallback());
+
+        let elapsed = Date.now() - this.next;
+        if (elapsed > 1000 / FPS) {
+            this.next = Date.now() - (elapsed % (1000 / FPS));
+            this.onUpdate((Date.now() - this.lastFrame) / 1000.0);
+        }
+    }
+
     onSceneLoad() {
         this.canvas.width = $("#towerCanvas").width();
         this.canvas.height = $("#towerCanvas").height();
 
-        this.timer = setInterval(() => {
-            this.onUpdate((Date.now() - this.lastFrame) / 1000.0)
-        }, 1000 / FPS);
+        requestAnimationFrame(() => this.animationCallback());
     }
 
     onSceneUnload() {
+        this.wavePlayed = false;
         clearInterval(this.timerId);
     }
 
     log(data) {
-        console.log(`[Game Stage | D] ${data}`);
+        console.log(`[Game Stage | Defense] ${data}`);
     }
 }

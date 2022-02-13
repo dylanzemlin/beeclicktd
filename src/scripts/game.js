@@ -13,7 +13,7 @@ class BeeTDGame {
             "defense": new GameStageDefense(),
             "menu": new GameStageMenu()
         };
-        this.stage = GameStage.DEFENSE;
+        this.stage = GameStage.CLICKER; // the starting stage
         this.setStage(this.stage);
 
         // Hook mouse and keyboard events
@@ -24,6 +24,7 @@ class BeeTDGame {
 
         // Set default honey
         putHoney(0);
+        putLives(50);
     }
 
     onGameTick() {
@@ -38,7 +39,21 @@ class BeeTDGame {
         }
 
         if (this.stage === GameStage.DEFENSE) {
+            if(!this.stages["defense"].wavePlayed) {
+                return;
+            }
 
+            let enemiesRemaining = this.stages["defense"].remainingEnemies();
+            if (enemiesRemaining > 0) {
+                return;
+            }
+
+            if (lives <= 0) {
+                this.setStage(GameStage.MENU);
+                return;
+            }
+
+            this.setStage(GameStage.CLICKER);
         }
     }
 
@@ -57,7 +72,9 @@ class BeeTDGame {
     }
 
     setStage(stage) {
-        this.getStageObject().onSceneUnload();
+        try {
+            this.getStageObject().onSceneUnload();
+        } catch {}
 
         this.stage = stage;
         switch (this.stage) {
@@ -78,7 +95,9 @@ class BeeTDGame {
             } break;
         }
 
-        this.getStageObject().onSceneLoad();
+        try {
+            this.getStageObject().onSceneLoad();
+        } catch {}
     }
 
     hookEvents() {
