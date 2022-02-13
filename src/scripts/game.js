@@ -23,8 +23,8 @@ class BeeTDGame {
         setInterval(() => this.onGameTick(), 1000);
 
         // Set default honey
-        putHoney(0);
-        putLives(50);
+        putHoney(isDemo ? 2022 : 0);
+        putLives(100);
     }
 
     onGameTick() {
@@ -32,7 +32,7 @@ class BeeTDGame {
             if (click_time_remaining-- <= 0) {
                 // TODO: If time permits, use some sort of scene switch scene?
                 this.setScene(Scene.DEFENSE);
-                click_time_remaining = 90; // TODO: Set based on wave or somethin
+                click_time_remaining = isDemo ? 5 : Math.floor(Math.max(20 + Math.pow(Math.E, wave)));
 
                 return;
             }
@@ -48,11 +48,16 @@ class BeeTDGame {
                 return;
             }
 
+            if(!this.stages["defense"].isWaveFinishedSending()) {
+                return;
+            }
+
             if (lives <= 0) {
                 this.setScene(Scene.MENU);
                 return;
             }
 
+            wave++;
             this.setScene(Scene.CLICKER);
         }
     }
