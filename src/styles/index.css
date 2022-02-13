@@ -147,10 +147,85 @@ h1, h2, h3, p {
 }
 
 #stage-defense .frames .towerContainer {
-    flex: 0 0 108px;
+    flex: 0 0 200px;
     background-color: rgb(51, 38, 2);
+    display: flex;
+    flex-direction: column;
 }
 
 #stage-defense .frames .canvasContainer {
     flex-grow: 1;
+}
+
+#honey-amount {
+    width: 100%;
+    padding-top: 0.4em;
+    padding-bottom: 0.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    border-bottom: 2px solid black;
+}
+
+#towers-title {
+    width: 100%;
+    padding-top: 0.4em;
+    padding-bottom: 0.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+}
+
+.towers {
+    padding-left: 0.1em;
+    padding-right: 0.1em;
+    
+    display: flex;
+    grid-template-columns: 1fr 1fr;
+
+    height: min-content;
+}
+
+.tower {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.tower:hover {
+    cursor: pointer;
+}
+
+.tower .icon {
+    flex-grow: 1;
+}
+
+.tower .cost {
+    height: min-content;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.purple {
+    background-color: purple;
+}
+
+.start-wave {
+    margin-top: auto;
+    width: 100%;
+    height: 40px;
+    background-color: rgb(146, 25, 25);
+    transition: background-color 0.24s ease;
+    cursor: pointer;
+    color: white;
+}
+
+.start-wave:hover {
+    background-color: rgb(117, 19, 19);
 }
