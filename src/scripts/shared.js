@@ -1,12 +1,23 @@
 // How much honey does the user have
-var honey = 0;
+var honey = 500;
 
 // How long does the user have left in their clicking time
 var click_time_remaining = 10;
 
+var mousePos = {
+    x: 0,
+    y: 0
+}
+
+$(document).mousemove(function(event) {
+    mousePos.x = event.pageX;
+    mousePos.y = event.pageY;
+});
+
 function putHoney(bHoney) {
     honey += bHoney;
     $("#honey-text").text(`${Math.floor(honey)} drops of honey`);
+    $("#honey-amount").text(`Honey: ${Math.floor(honey)}`);
 }
 
 // https://stackoverflow.com/questions/10214873/make-canvas-as-wide-and-as-high-as-parent
