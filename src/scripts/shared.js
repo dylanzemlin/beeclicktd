@@ -1,8 +1,8 @@
 // How much honey does the user have
-var honey = 500;
+var honey = 0;
 
 // How long does the user have left in their clicking time
-var click_time_remaining = 0;
+var click_time_remaining = 10;
 
 // The remaining lives
 var lives = 50;
@@ -12,6 +12,12 @@ var isHoldingCtrl = false;
 
 // The current wave
 var wave = 0;
+
+// Debugging mode enables debug waves & debug text
+var isDebugging = false;
+
+// If it is in demo mode, the starting honey is increased and the time between waves is decreased
+var isDemo = true;
 
 var mousePos = {
     x: 0,
