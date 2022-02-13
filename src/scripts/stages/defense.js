@@ -192,10 +192,10 @@ var towerMap = {
 }
 
 var enemyMap = {
-    "spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 200, "assets/hives/spider0.png"),
-    "booted_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 4, 300, "assets/hives/spider1.png"),
-    "winged_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 8, 150, "assets/hives/spider2.png"),
-    "wizard_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 250, "assets/hives/spider3.png")
+    "spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 200, "assets/spiders/spider0.png"),
+    "booted_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 4, 300, "assets/spiders/spider1.png"),
+    "winged_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 8, 150, "assets/spiders/spider2.png"),
+    "wizard_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 250, "assets/spiders/spider3.png")
 }
 
 var waveMap = {
