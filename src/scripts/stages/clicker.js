@@ -7,6 +7,7 @@ class BeeUpgrade {
         this.output = honeyOutput;
         this.requirePrevious = requirePrevious;
         this.icon = icon;
+        this.timerId = undefined;
         this.owned = 0;
     }
 
@@ -43,7 +44,6 @@ class GameStageClicker {
             });
             $(".upgrades").append(clonedUpgrade);
         }
-        setInterval(() => this.onBeeTick(), 100);
         this.log("Initialized");
     }
 
@@ -60,9 +60,17 @@ class GameStageClicker {
         $(".upgrade-text", element).text(`${upgrade.name} (${upgrade.owned})`);
     }
 
+    onSceneLoad() {
+        this.timerId = setInterval(() => this.onBeeTick(), 100);
+    }
+
+    onSceneUnload() {
+        clearInterval(this.timerId);
+    }
+
     onBeeTick() {
         $("#stage-clicker .timer").text(`Time Remaining: ${moment.utc(click_time_remaining * 1000).format("mm:ss")}`);
-        if(click_time_remaining <= 15) {
+        if (click_time_remaining <= 15) {
             $("#stage-clicker .timer").css("color", "red");
         } else {
             $("#stage-clicker .timer").css("color", "white");
@@ -85,12 +93,12 @@ class GameStageClicker {
                     continue;
                 }
 
-                if(lastUpgrade !== undefined && upgrade.requirePrevious > lastUpgrade.owned) {
+                if (lastUpgrade !== undefined && upgrade.requirePrevious > lastUpgrade.owned) {
                     // We do not have enough of the previous upgrade to use this one
                     lastUpgrade = upgrade;
                     continue;
                 }
-                
+
                 element.removeClass("unavailable");
             } else {
                 if (element == undefined || element.hasClass("unavailable")) {

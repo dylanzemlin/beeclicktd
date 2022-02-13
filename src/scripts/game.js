@@ -1,6 +1,6 @@
 console.log("Bee Click Tower Defense");
 
-const GameStage = {
+const Scene = {
     CLICKER: 0,
     DEFENSE: 1,
     MENU: 2
@@ -13,8 +13,8 @@ class BeeTDGame {
             "defense": new GameStageDefense(),
             "menu": new GameStageMenu()
         };
-        this.stage = GameStage.CLICKER; // the starting stage
-        this.setStage(this.stage);
+        this.stage = Scene.MENU; // the starting stage
+        this.setScene(this.stage);
 
         // Hook mouse and keyboard events
         this.hookEvents();
@@ -28,18 +28,18 @@ class BeeTDGame {
     }
 
     onGameTick() {
-        if (this.stage === GameStage.CLICKER) {
+        if (this.stage === Scene.CLICKER) {
             if (click_time_remaining-- <= 0) {
                 // TODO: If time permits, use some sort of scene switch scene?
-                this.setStage(GameStage.DEFENSE);
+                this.setScene(Scene.DEFENSE);
                 click_time_remaining = 90; // TODO: Set based on wave or somethin
 
                 return;
             }
         }
 
-        if (this.stage === GameStage.DEFENSE) {
-            if(!this.stages["defense"].wavePlayed) {
+        if (this.stage === Scene.DEFENSE) {
+            if (!this.stages["defense"].wavePlayed) {
                 return;
             }
 
@@ -49,46 +49,46 @@ class BeeTDGame {
             }
 
             if (lives <= 0) {
-                this.setStage(GameStage.MENU);
+                this.setScene(Scene.MENU);
                 return;
             }
 
-            this.setStage(GameStage.CLICKER);
+            this.setScene(Scene.CLICKER);
         }
     }
 
-    getStageObject() {
+    getSceneObject() {
         switch (this.stage) {
-            case GameStage.CLICKER: {
+            case Scene.CLICKER: {
                 return this.stages["clicker"];
             }
-            case GameStage.DEFENSE: {
+            case Scene.DEFENSE: {
                 return this.stages["defense"];
             }
-            case GameStage.MENU: {
+            case Scene.MENU: {
                 return this.stages["menu"];
             }
         }
     }
 
-    setStage(stage) {
+    setScene(stage) {
         try {
-            this.getStageObject().onSceneUnload();
-        } catch {}
+            this.getSceneObject().onSceneUnload();
+        } catch { }
 
         this.stage = stage;
         switch (this.stage) {
-            case GameStage.CLICKER: {
+            case Scene.CLICKER: {
                 $("#stage-menu").addClass("hidden");
                 $("#stage-defense").addClass("hidden");
                 $("#stage-clicker").removeClass("hidden");
             } break;
-            case GameStage.DEFENSE: {
+            case Scene.DEFENSE: {
                 $("#stage-menu").addClass("hidden");
                 $("#stage-clicker").addClass("hidden");
                 $("#stage-defense").removeClass("hidden");
             } break;
-            case GameStage.MENU: {
+            case Scene.MENU: {
                 $("#stage-clicker").addClass("hidden");
                 $("#stage-defense").addClass("hidden");
                 $("#stage-menu").removeClass("hidden");
@@ -96,13 +96,14 @@ class BeeTDGame {
         }
 
         try {
-            this.getStageObject().onSceneLoad();
-        } catch {}
+            this.getSceneObject().onSceneLoad();
+        } catch { }
     }
 
     hookEvents() {
         $("#create-game").click(() => {
             // Create Game
+            this.setScene(Scene.CLICKER);
         });
     }
 }

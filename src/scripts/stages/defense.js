@@ -6,19 +6,23 @@ function lerp(a, b, n) {
         return a;
     }
 
-    return a + (a > b ? -n : n);
-}
+    if(Math.abs(b - a) <= 5) {
+        return b;
+    }
 
-function circle(ctx, center, radius) {
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI, false);
-    ctx.fill();
+    return a + (a > b ? -n : n);
 }
 
 function hollowCircle(ctx, center, radius) {
     ctx.beginPath();
     ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI, false);
     ctx.stroke();
+}
+
+function filledCircle(ctx, center, radius) {
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI, false);
+    ctx.fill();
 }
 
 function calcDistance(p1, p2) {
@@ -36,6 +40,7 @@ class GameMap {
         context.fillRect(0, 0, canvas.width, canvas.height);
 
         context.lineWidth = 25;
+        context.strokeStyle = "gray";
         context.beginPath();
         context.moveTo(this.data.path[0].x, this.data.path[0].y);
         for (let i = 1; i < this.data.path.length; i++) {
@@ -43,20 +48,30 @@ class GameMap {
             context.lineTo(coord.x, coord.y);
         }
         context.stroke();
+
+        for (const lake of this.data.lakes) {
+            context.fillStyle = lake.color;
+            context.fillRect(lake.x, lake.y, lake.width, lake.height);
+        }
     }
 }
 
 class GameEnemy {
-    constructor(pathing, speed, health, color, size) {
+    constructor(pathing, speed, health, iconSrc) {
         this.pathing = pathing;
         this.speed = speed;
         this.health = health;
-        this.color = color;
-        this.size = size;
+        this.canDraw = false;
+
+        this.icon = new Image(48, 48);
+        this.icon.src = iconSrc;
+        this.icon.onload = () => {
+            this.canDraw = true;
+        }
     }
 
     clone() {
-        return new GameEnemy(JSON.parse(JSON.stringify(this.pathing)), this.speed, this.health, this.color, this.size);
+        return new GameEnemy(JSON.parse(JSON.stringify(this.pathing)), this.speed, this.health, this.icon.src);
     }
 
     onGameTick(game) {
@@ -68,22 +83,36 @@ class GameEnemy {
     }
 
     draw(context) {
-        if (this.health <= 0) {
+        if (this.health <= 0 || !this.canDraw) {
             return;
         }
 
+        context.drawImage(this.icon, this.pathing.x - 20, this.pathing.y - 20, 48, 48);
+    }
+}
+
+class BeeProjectile {
+    constructor(position, velocity, target, size, color) {
+        this.position = position;
+        this.velocity = velocity;
+        this.target = target;
+        this.isDead = false;
+        this.size = size;
+        this.color = color;
+    }
+
+    draw(context) {
         context.fillStyle = this.color;
-        context.fillRect(this.pathing.x - this.size / 2, this.pathing.y - this.size / 2, this.size, this.size);
+        filledCircle(context, this.position, 5);
     }
 }
 
 class BeeTower {
-    constructor(position, speed, damage, iconSrc, size, range, cost) {
+    constructor(position, speed, damage, iconSrc, range, cost) {
         this.position = position;
         this.canDraw = false;
         this.speed = speed;
         this.damage = damage;
-        this.size = size;
         this.range = range;
         this.cost = cost;
         this.lastAttack = 0;
@@ -96,7 +125,7 @@ class BeeTower {
     }
 
     clone() {
-        return new BeeTower(this.position, this.speed, this.damage, this.icon.src, this.size, this.range, this.cost);
+        return new BeeTower(this.position, this.speed, this.damage, this.icon.src, this.range, this.cost);
     }
 
     onGameTick(game) {
@@ -108,7 +137,10 @@ class BeeTower {
                 continue;
             }
 
-            const distance = calcDistance(this.position, { x: enemy.pathing.x, y: enemy.pathing.y });
+            const distance = calcDistance({
+                x: this.position.x + 24,
+                y: this.position.y + 24
+            }, { x: enemy.pathing.x, y: enemy.pathing.y });
             if (distance > closetEnemyDistance) {
                 continue;
             }
@@ -131,53 +163,96 @@ class BeeTower {
             this.lastAttack = Date.now();
             targetEnemy.attack(this.damage);
 
+            game.fireProjectile(this.position, targetEnemy.pathing, { width: 3, height: 8 }, "yellow")
+
             // Draw Attack Line
-            game.context.lineWidth = 5;
-            game.context.beginPath();
-            game.context.moveTo(this.position.x, this.position.y);
-            game.context.lineTo(targetEnemy.pathing.x, targetEnemy.pathing.y);
-            game.context.stroke();
+            // game.context.lineWidth = 2;
+            // game.context.beginPath();
+            // game.context.moveTo(this.position.x + 24, this.position.y + 24);
+            // game.context.lineTo(targetEnemy.pathing.x, targetEnemy.pathing.y);
+            // game.context.stroke();
         }
     }
 
     draw(context, opacity) {
-        if(!this.canDraw) {
+        if (!this.canDraw) {
             return;
         }
-        
+
         const priorOpacity = context.globalAlpha;
         context.globalAlpha = opacity;
         context.drawImage(this.icon, this.position.x, this.position.y, 48, 48);
         if (isHoldingCtrl) {
-            hollowCircle(context, this.position, this.range);
+            context.lineWidth = 7;
+            hollowCircle(context, { x: this.position.x + 24, y: this.position.y + 24 }, this.range);
         }
+
         context.globalAlpha = priorOpacity;
     }
 }
 
 var towerMap = {
-    "basic": new BeeTower({ x: 0, y: 0 }, 1, 50, "assets/hives/hive0.png", 18, 150, 25)
-    // "smash": new BeeTower({ x: 0, y: 0 }, 2.3, 100, "orange", 18, 75, 50),
+    "hive": new BeeTower({ x: 0, y: 0 }, 0.25, 50, "assets/hives/hive0.png", 150, 25),
+    "apiary": new BeeTower({ x: 0, y: 0 }, 1, 59, "assets/hives/apiary0.png", 130, 50),
+    "rainbow_hive": new BeeTower({ x: 0, y: 0 }, 2, 150, "assets/hives/hive1.png", 200, 200),
+    "ilumi_apiary": new BeeTower({ x: 0, y: 0 }, 0.7, 87, "assets/hives/apiary1.png", 90, 400),
 }
 
 var enemyMap = {
-    "basic": new GameEnemy({ x: 0, y: 0, index: 1 }, 5, 200, "red", 15)
+    "spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 200, "assets/hives/spider0.png"),
+    "booted_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 4, 300, "assets/hives/spider1.png"),
+    "winged_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 8, 150, "assets/hives/spider2.png"),
+    "wizard_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 250, "assets/hives/spider3.png"),
+    //"bigboi": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 200, "orange", 13),
 }
 
 var waveMap = {
     "beasy": [
         {
+            quote: "Debug wave for the win", // A quote displayed at the bottom of the screen
+            enemies: [
+                // enemy type, delay until next enemy
+                "spooder", 2000,
+                "booted_spooder", 2000,
+                "winged_spooder", 2000,
+                "wizard_spooder", 2000
+            ]
+        },
+        {
             quote: "This should be an easy start", // A quote displayed at the bottom of the screen
             enemies: [
                 // enemy type, delay until next enemy
-                "basic", 1000,
-                "basic", 1000,
-                "basic", 1000,
-                "basic", 1000,
-                "basic", 1000,
-                "basic", 1000,
-                "basic", 1000,
-                "basic", 1000
+                "spooder", 1250,
+                "spooder", 1250,
+                "spooder", 1250,
+                "spooder", 1250,
+                "spooder", 1250,
+                "spooder", 1250,
+                "spooder", 1250,
+                "spooder", 1250
+            ]
+        },
+        {
+            quote: "Its gonna start getting a little more heated", // A quote displayed at the bottom of the screen
+            enemies: [
+                // enemy type, delay until next enemy
+                "spooder", 1000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "spooder", 1000
+            ]
+        },
+        {
+            quote: "A new enemy comes across the horizon", // A quote displayed at the bottom of the screen
+            enemies: [
+                // enemy type, delay until next enemy
+                "booted_spooder", 2000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "booted_spooder", 2000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "spooder", 1000,
+                "booted_spooder", 2000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "booted_spooder", 2000
             ]
         }
     ]
@@ -192,6 +267,7 @@ class GameStageDefense {
         this.wavePlayed = false;
         this.isHoldingShift = false;
         this.enemies = [];
+        this.projectiles = [];
         this.towers = []
         this.timerId = undefined;
         this.lastFrame = 0;
@@ -207,6 +283,9 @@ class GameStageDefense {
                 { x: 200, y: 700 },
                 { x: 900, y: 700 },
                 { x: 900, y: 0 },
+            ],
+            lakes: [
+                { x: 400, y: 40, width: 350, height: 185, color: "#006994" }
             ]
         });
 
@@ -235,6 +314,51 @@ class GameStageDefense {
         });
     }
 
+    isOverLake() {
+        for (let lake of this.map.data.lakes) {
+            if (mousePos.x >= lake.x - 15 && mousePos.x < lake.x + lake.width + 15
+                && mousePos.y >= lake.y - 15 && mousePos.y < lake.y + lake.height + 15) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    isOverPath() {
+        // TODO: This does not work properly in some instances, figure that out later
+        for (let i = 0; i < this.map.data.path.length - 1; i++) {
+            const pathPoint = this.map.data.path[i];
+            const next = this.map.data.path[i + 1];
+            const width = Math.abs(next.x - pathPoint.x);
+            const height = Math.abs(next.y - pathPoint.y);
+            if (mousePos.x >= pathPoint.x - 15 && mousePos.x < pathPoint.x + width + 15
+                && mousePos.y >= pathPoint.y - 15 && mousePos.y < pathPoint.y + height + 15) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    isOverTower() {
+        for (const tower of this.towers) {
+            const dist = calcDistance(mousePos, {
+                x: tower.position.x + 24,
+                y: tower.position.y + 24
+            });
+            if (dist <= 35) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    fireProjectile(position, target, size, color) {
+        this.projectiles.push(new BeeProjectile(JSON.parse(JSON.stringify(position)), { x: 18, y: 18 }, target, size, color));
+    }
+
     onClick(event) {
         // event.which contains which button
         // 1 is left, 2 is middle, 3 is right, 4 is strange
@@ -244,11 +368,23 @@ class GameStageDefense {
         }
 
         if (event.which === 1 && this.placingTower) {
-            if (mousePos.x > 1100 || mousePos.x < 0 || mousePos.y < 1) {
+            if (mousePos.x > 1100 || mousePos.x < 10 || mousePos.y < 10) {
                 return;
             }
 
             // Clone the towers positions so it doesn't get effected by the global object
+            if (this.isOverLake()) {
+                return;
+            }
+
+            if (this.isOverTower()) {
+                return;
+            }
+
+            if (this.isOverPath()) {
+                return;
+            }
+
             this.placingTower.position = JSON.parse(JSON.stringify(this.placingTower.position));
             this.towers.push(this.placingTower.clone());
 
@@ -295,12 +431,6 @@ class GameStageDefense {
         // First draw the map
         this.map.draw(this.canvas, this.context);
 
-        // Draw Path
-        this.context.fillStyle = "red";
-        for (const partOfPath of this.map.data.path) {
-            this.context.fillRect(partOfPath.x, partOfPath.y, 5, 5);
-        }
-
         // Draw Towers
         for (const tower of this.towers) {
             tower.draw(this.context, 1);
@@ -316,8 +446,8 @@ class GameStageDefense {
             enemy.pathing.x = lerp(enemy.pathing.x, this.map.data.path[enemy.pathing.index].x, enemy.speed);
             enemy.pathing.y = lerp(enemy.pathing.y, this.map.data.path[enemy.pathing.index].y, enemy.speed);
 
-            if (Math.abs(this.map.data.path[enemy.pathing.index].x - enemy.pathing.x) <= 3
-                && Math.abs(this.map.data.path[enemy.pathing.index].y - enemy.pathing.y) <= 3) {
+            if (Math.abs(this.map.data.path[enemy.pathing.index].x - enemy.pathing.x) <= 4.5
+                && Math.abs(this.map.data.path[enemy.pathing.index].y - enemy.pathing.y) <= 4.5) {
                 if (enemy.pathing.index + 1 < this.map.data.path.length) {
                     enemy.pathing.index++;
                 } else {
@@ -328,13 +458,29 @@ class GameStageDefense {
 
             enemy.draw(this.context);
             enemy.onGameTick(this);
-
         }
 
         // Draw Placing Tower
         if (this.placingTower !== undefined) {
             this.placingTower.position = { x: mousePos.x - 24, y: mousePos.y - 24 };
             this.placingTower.draw(this.context, 0.5);
+        }
+
+        // Simulate Projectiles
+        for (const projectile of this.projectiles) {
+            if (projectile.isDead) {
+                continue;
+            }
+
+            projectile.position.x = lerp(projectile.position.x, projectile.target.x, projectile.velocity.x);
+            projectile.position.y = lerp(projectile.position.y, projectile.target.y, projectile.velocity.y);
+            projectile.draw(this.context);
+
+            const distToTarget = calcDistance(projectile.position, projectile.target);
+            if (distToTarget <= 15) {
+                projectile.isDead = true;
+                continue;
+            }
         }
 
         // Debug Information
@@ -400,6 +546,11 @@ class GameStageDefense {
     }
 
     onSceneUnload() {
+        this.projectiles = [];
+        this.enemies = [];
+        this.towers = [];
+        $(".start-wave").show();
+
         this.wavePlayed = false;
         clearInterval(this.timerId);
     }
