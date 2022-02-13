@@ -164,13 +164,6 @@ class BeeTower {
             targetEnemy.attack(this.damage);
 
             game.fireProjectile(this.position, targetEnemy.pathing, { width: 3, height: 8 }, "yellow")
-
-            // Draw Attack Line
-            // game.context.lineWidth = 2;
-            // game.context.beginPath();
-            // game.context.moveTo(this.position.x + 24, this.position.y + 24);
-            // game.context.lineTo(targetEnemy.pathing.x, targetEnemy.pathing.y);
-            // game.context.stroke();
         }
     }
 
@@ -182,7 +175,7 @@ class BeeTower {
         const priorOpacity = context.globalAlpha;
         context.globalAlpha = opacity;
         context.drawImage(this.icon, this.position.x, this.position.y, 48, 48);
-        if (isHoldingCtrl) {
+        if (isHoldingCtrl || opacity < 1) {
             context.lineWidth = 7;
             hollowCircle(context, { x: this.position.x + 24, y: this.position.y + 24 }, this.range);
         }
@@ -202,22 +195,11 @@ var enemyMap = {
     "spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 200, "assets/hives/spider0.png"),
     "booted_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 4, 300, "assets/hives/spider1.png"),
     "winged_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 8, 150, "assets/hives/spider2.png"),
-    "wizard_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 250, "assets/hives/spider3.png"),
-    //"bigboi": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 200, "orange", 13),
+    "wizard_spooder": new GameEnemy({ x: 0, y: 0, index: 1 }, 6, 250, "assets/hives/spider3.png")
 }
 
 var waveMap = {
     "beasy": [
-        {
-            quote: "Debug wave for the win", // A quote displayed at the bottom of the screen
-            enemies: [
-                // enemy type, delay until next enemy
-                "spooder", 2000,
-                "booted_spooder", 2000,
-                "winged_spooder", 2000,
-                "wizard_spooder", 2000
-            ]
-        },
         {
             quote: "This should be an easy start", // A quote displayed at the bottom of the screen
             enemies: [
@@ -250,8 +232,38 @@ var waveMap = {
                 // enemy type, delay until next enemy
                 "booted_spooder", 2000, "spooder", 1000, "spooder", 1000,
                 "spooder", 1000, "booted_spooder", 2000, "spooder", 1000,
-                "spooder", 1000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "winged_spooder", 1000, "spooder", 1000,
                 "booted_spooder", 2000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "booted_spooder", 2000
+            ]
+        },
+        {
+            quote: "Hopefully you can withstand this one!", // A quote displayed at the bottom of the screen
+            enemies: [
+                // enemy type, delay until next enemy
+                "booted_spooder", 2000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "booted_spooder", 2000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "spooder", 1000,
+                "winged_spooder", 2000, "winged_spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "booted_spooder", 2000,
+                "winged_spooder", 2000, "winged_spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "booted_spooder", 2000
+            ]
+        },
+        {
+            quote: "Alright, I guess you can keep playing", // A quote displayed at the bottom of the screen
+            enemies: [
+                // enemy type, delay until next enemy
+                "booted_spooder", 2000, "spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "booted_spooder", 2000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "spooder", 1000,
+                "winged_spooder", 2000, "winged_spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "booted_spooder", 2000,
+                "winged_spooder", 2000, "winged_spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "booted_spooder", 2000,
+                "winged_spooder", 2000, "winged_spooder", 1000, "spooder", 1000,
+                "spooder", 1000, "spooder", 1000, "booted_spooder", 2000,
+                "winged_spooder", 2000, "winged_spooder", 1000, "spooder", 1000,
                 "spooder", 1000, "spooder", 1000, "booted_spooder", 2000
             ]
         }
@@ -483,14 +495,20 @@ class GameStageDefense {
             }
         }
 
-        // Debug Information
         this.context.font = "18px Arial";
         this.context.fillStyle = "white";
-        this.context.fillText(`(${mousePos.x}, ${mousePos.y})`, 15, 30);
-        this.context.fillText(`Shift: ${this.isHoldingShift}`, 15, 50);
-        this.context.fillText(`Ctrl: ${isHoldingCtrl}`, 15, 70);
-        this.context.fillText(`Wave: ${wave}`, 15, 90);
-        this.context.fillText(`Enemies: ${this.remainingEnemies()}`, 15, 110);
+
+        if(isDebugging) {
+            // Debug Information
+            this.context.fillText(`(${mousePos.x}, ${mousePos.y})`, 15, 30);
+            this.context.fillText(`Shift: ${this.isHoldingShift}`, 15, 50);
+            this.context.fillText(`Ctrl: ${isHoldingCtrl}`, 15, 70);
+            this.context.fillText(`Wave: ${wave + 1}`, 15, 90);
+            this.context.fillText(`Enemies: ${this.remainingEnemies()} / ${waveMap["beasy"][wave].enemies.filter(x => typeof x === "string").length}`, 15, 110);
+        } else {
+            this.context.fillText(`Wave: ${wave + 1}`, 15, 30);
+            this.context.fillText(`Enemies: ${this.remainingEnemies()} / ${waveMap["beasy"][wave].enemies.filter(x => typeof x === "string").length}`, 15, 50);
+        }
     }
 
     startWave(enemyIndex) {
@@ -526,6 +544,10 @@ class GameStageDefense {
 
     remainingEnemies() {
         return this.enemies.filter(x => x.health > 0).length;
+    }
+
+    isWaveFinishedSending() {
+        return this.enemies.length >= waveMap["beasy"][wave].enemies.filter(x => typeof x === "string").length;
     }
 
     animationCallback() {

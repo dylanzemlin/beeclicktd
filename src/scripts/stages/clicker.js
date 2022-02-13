@@ -20,8 +20,10 @@ class GameStageClicker {
     constructor() {
         // name - honeyCost - honeyCostDecay - honeyOutput - requirePrevious, icon
         this.upgrades = {
-            "honeycomb": new BeeUpgrade("Honeycomb", 5, 0.8, 1, 0, "https://beeclick.org/img/bee-clicker-upgrades.png"),
-            "honeyboo": new BeeUpgrade("Honeyboo", 10, 0.6, 2, 5, "https://beeclick.org/img/bee-clicker-upgrades.png"),
+            "apiary": new BeeUpgrade("Apiary", 20, 0.8, 1, 0, "assets/hives/apiary0.png"),
+            "hive": new BeeUpgrade("Hive", 100, 0.6, 2, 5, "assets/hives/hive0.png"),
+            "rainbowairy": new BeeUpgrade("Rainbowary", 2000, 0.6, 4, 5, "assets/hives/apiary1.png"),
+            "illumihive": new BeeUpgrade("Illumihive", 10000, 0.6, 10, 5, "assets/hives/hive1.png"),
         }
 
         $("#bee").click(() => this.onBeeClicked());
