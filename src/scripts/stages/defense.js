@@ -78,20 +78,25 @@ class GameEnemy {
 }
 
 class BeeTower {
-    constructor(position, speed, damage, color, size, range, cost) {
+    constructor(position, speed, damage, iconSrc, size, range, cost) {
         this.position = position;
+        this.canDraw = false;
         this.speed = speed;
         this.damage = damage;
-        this.color = color;
         this.size = size;
         this.range = range;
         this.cost = cost;
-
         this.lastAttack = 0;
+
+        this.icon = new Image(48, 48);
+        this.icon.src = iconSrc;
+        this.icon.onload = () => {
+            this.canDraw = true;
+        }
     }
 
     clone() {
-        return new BeeTower(this.position, this.speed, this.damage, this.color, this.size, this.range, this.cost);
+        return new BeeTower(this.position, this.speed, this.damage, this.icon.src, this.size, this.range, this.cost);
     }
 
     onGameTick(game) {
@@ -136,11 +141,13 @@ class BeeTower {
     }
 
     draw(context, opacity) {
+        if(!this.canDraw) {
+            return;
+        }
+        
         const priorOpacity = context.globalAlpha;
         context.globalAlpha = opacity;
-        context.fillStyle = this.color;
-        context.lineWidth = 5;
-        circle(context, this.position, this.size);
+        context.drawImage(this.icon, this.position.x, this.position.y, 48, 48);
         if (isHoldingCtrl) {
             hollowCircle(context, this.position, this.range);
         }
@@ -149,8 +156,8 @@ class BeeTower {
 }
 
 var towerMap = {
-    "basic": new BeeTower({ x: 0, y: 0 }, 1, 50, "purple", 18, 150, 25),
-    "smash": new BeeTower({ x: 0, y: 0 }, 2.3, 100, "orange", 18, 75, 50),
+    "basic": new BeeTower({ x: 0, y: 0 }, 1, 50, "assets/hives/hive0.png", 18, 150, 25)
+    // "smash": new BeeTower({ x: 0, y: 0 }, 2.3, 100, "orange", 18, 75, 50),
 }
 
 var enemyMap = {
@@ -214,7 +221,7 @@ class GameStageDefense {
             const clone = $("#fake-tower").clone();
             clone.removeClass("hidden");
             clone.attr("id", key);
-            $(".icon", clone).css("background-color", tower.color);
+            $(".icon", clone).attr("src", `${tower.icon.src}`);
             $(".cost", clone).text(`Honey Cost: ${tower.cost}`);
             $(".towers").append(clone);
             clone.click(() => {
@@ -326,7 +333,7 @@ class GameStageDefense {
 
         // Draw Placing Tower
         if (this.placingTower !== undefined) {
-            this.placingTower.position = mousePos;
+            this.placingTower.position = { x: mousePos.x - 24, y: mousePos.y - 24 };
             this.placingTower.draw(this.context, 0.5);
         }
 

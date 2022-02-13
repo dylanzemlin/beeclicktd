@@ -2,7 +2,7 @@
 var honey = 500;
 
 // How long does the user have left in their clicking time
-var click_time_remaining = 5;
+var click_time_remaining = 0;
 
 // The remaining lives
 var lives = 50;
